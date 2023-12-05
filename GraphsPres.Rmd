@@ -1,0 +1,341 @@
+---
+title: "Habits"
+output:
+  html_document:
+    code_folding: hide
+date: "2023-07-26"
+---
+
+```{r setup, include=TRUE,message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#setwd("Q:/Rising Sophomore Project/working from snapshots")
+##source("data setup script.R")
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(readr)
+library(scales)
+library(zipcodeR)
+load("snapmaster.Rda")
+```
+
+
+
+OVERALL RENTENTION RATES
+
+
+
+```{r Overall retention rates}
+snap_master %>% 
+  aggregate(cbind(ret_fall,ret_spring) ~ `COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`))+
+  geom_point(aes(y=ret_fall))+
+  geom_line(aes(y=ret_fall),group='identity')+
+  geom_point(aes(y=ret_spring))+
+  geom_line(aes(y=ret_spring),linetype='dashed',group='identity')+ 
+  ylab("Retention/Persistence")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+snap_master %>% 
+  aggregate(cbind(ret_fall,ret_spring) ~ `COHORT TERM`+`COLLEGE CODE`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,group = `COLLEGE CODE`,color =`COLLEGE CODE`))+
+  geom_point(aes(y=ret_fall))+
+  geom_line(aes(y=ret_fall),lwd=1)+
+  geom_point(aes(y=ret_spring))+
+  geom_line(aes(y=ret_spring),linetype='dashed')+
+  ylab("Retention/Persistence")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+snap_master %>% 
+  ggplot(aes(`COLLEGE CODE`))+
+  geom_bar(aes(y = ..prop..,group = 1))+
+  labs(title= "Colleges XU Students",
+       x= "College",
+       y= "Proportion of Students")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+Explanation of why we are choosing to analyze "Report Ethnicity" as White/Black or African American/Hispanic/Other
+```{r}
+
+snap_master %>% 
+  ggplot(aes(`REPORT ETHNICITY`))+
+  geom_bar(aes(y = ..prop..,group = 1))+
+  labs(title= "Ethnicity of XU Students",
+       x= "Ethnicity",
+       y= "Proportion of Students")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+snap_master %>% 
+  ggplot(aes(Ethnicity))+
+  geom_bar(aes(y = ..prop..,group = 1))+
+  labs(title= "Ethnicity of XU Students",
+       x= "Ethnicity",
+       y= "Proportion of Students")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+snap_master %>% 
+  aggregate(cbind(ret_spring,ret_fall) ~ Ethnicity+`COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,color= Ethnicity, group= Ethnicity))+
+  geom_point(aes(y=ret_fall))+
+  geom_line(aes(y=ret_fall),lwd=1)+
+  geom_point(aes(y=ret_spring))+
+  geom_line(aes(y=ret_spring),linetype='dashed')+  
+  ylab("Retention/Persistence by Ethnicity")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+
+snap_master %>% 
+  aggregate(cbind(ret_fall,ret_spring) ~ `COHORT TERM`+`COLLEGE CODE`+Ethnicity,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_fall,group=Ethnicity,color=Ethnicity))+
+  geom_point()+
+  geom_line()+
+  ylab("Retention to Fall")+
+  xlab("Cohort Term")+
+  facet_wrap(~`COLLEGE CODE`)+
+  theme_bw()
+
+snap_master %>% 
+  aggregate(ret_spring ~ `COHORT TERM`+`COLLEGE CODE`+Ethnicity,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_spring,group=Ethnicity,color=Ethnicity))+
+  geom_point()+
+  geom_line(linetype='dashed')+
+  ylab("Persistence to Spring")+
+  xlab("Cohort Term")+
+  facet_wrap(~`COLLEGE CODE`)+
+  theme_bw()
+```
+
+
+Commuter Dorm aspects
+
+```{r}
+snap_master %>% 
+  aggregate(cbind(ret_fall,ret_spring) ~ `COMMUTER DORM`+`COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,color=`COMMUTER DORM`, group=`COMMUTER DORM`))+
+  geom_point(aes(y=ret_fall))+
+  geom_line(aes(y=ret_fall))+
+  geom_point(aes(y=ret_spring))+
+  geom_line(aes(y=ret_spring),linetype='dashed')+
+  ylab("Retention/Persistence")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+snap_master %>% 
+  aggregate(cbind(ret_fall,ret_spring) ~ `COMMUTER DORM`+`COHORT TERM`+`COLLEGE CODE`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_fall,color=`COMMUTER DORM`, group=`COMMUTER DORM`))+
+  geom_point(aes(y=ret_fall))+
+  geom_line(aes(y=ret_fall))+
+  geom_point(aes(y=ret_spring))+
+  geom_line(aes(y=ret_spring),linetype='dashed')+
+  facet_wrap(~`COLLEGE CODE`) +
+  ylab("Retention/Persistence")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+
+snap_master %>% 
+  aggregate(cbind(ret_fall,ret_spring) ~ `COMMUTER DORM`+`COHORT TERM`+Ethnicity,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_fall,color=`COMMUTER DORM`, group=`COMMUTER DORM`))+
+  geom_point(aes(y=ret_fall))+
+  geom_line(aes(y=ret_fall))+
+  geom_point(aes(y=ret_spring))+
+  geom_line(aes(y=ret_spring),linetype='dashed')+
+  facet_wrap(~Ethnicity) +
+  ylab("Retention/Persistence")+
+  xlab("Cohort Term")+
+  theme_bw()
+```
+
+```{r}
+
+snap_master %>% 
+  ggplot(aes(RELIGION))+
+  geom_bar(aes(y = ..prop..,group = 1))+
+  labs(title= "Religion of XU Students",
+       x= "Religion",
+       y= "Proportion of Students")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+snap_master %>% 
+  ggplot(aes(religion))+
+  geom_bar(aes(y = ..prop..,group = 1))+
+  labs(title= "Religion of XU Students",
+       x= "Religion",
+       y= "Proportion of Students")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+snap_master %>% 
+  aggregate(ret_fall ~ religion+`COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_fall,color=religion, group=religion))+
+  geom_point()+
+  geom_line()+
+  ylab("Retention to Fall")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+snap_master %>% 
+  aggregate(ret_spring ~ religion+`COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_spring,color=religion, group=religion))+
+  geom_point()+
+  geom_line(linetype='dashed')+
+  ylab("Persistence to Spring")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+snap_master %>% 
+  aggregate(ret_fall ~ religion+`COHORT TERM`+`COLLEGE CODE`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_fall,color=religion, group=religion))+
+  geom_point()+
+  geom_line()+
+  ylab("Retention to Fall")+
+  xlab("Cohort Term")+
+  ylim(.5,1)+
+  facet_wrap(~`COLLEGE CODE`)+
+  theme_bw()
+```
+
+Retention by GPA
+
+```{r}
+snap_master %>% 
+  aggregate(ret_fall ~`gpa_buckets` ,data = .,mean) %>%
+  ggplot(aes(x=`gpa_buckets`,y=ret_fall))+
+  geom_point()+
+  geom_line(group = "identity")+
+  ylab("Retention to Fall")+
+  xlab("Fall Xavier GPA")+
+  theme_bw()
+
+snap_master %>% 
+  aggregate(ret_fall ~hsgpa_buckets,data = .,mean) %>%
+  ggplot(aes(x=hsgpa_buckets,y=ret_fall))+
+  geom_point()+
+  geom_line(group = "identity")+
+  ylab("Retention to Fall")+
+  xlab("High School GPA")+
+  theme_bw()
+```
+
+
+
+
+
+
+
+```{r}
+snap_master %>% 
+  filter(`HOME STATE` %in% c("OH", "KY", "IN", "IL", "MI", "NY" )) %>% 
+aggregate(ret_fall ~ `HOME STATE`+`COHORT TERM`,data = .,mean) %>%
+ggplot(aes(x=`COHORT TERM`,y=ret_fall,color=`HOME STATE`, group=`HOME STATE`))+
+geom_point()+
+  geom_line()+
+ylab("Retention to Fall")+
+xlab("Cohort Term")+
+theme_bw()
+
+snap_master %>% 
+  filter(`HOME STATE` %in% c("OH", "KY", "IN", "IL", "MI", "NY" )) %>% 
+aggregate(ret_spring ~ `HOME STATE`+`COHORT TERM`,data = .,mean) %>%
+ggplot(aes(x=`COHORT TERM`,y=ret_spring,color=`HOME STATE`, group=`HOME STATE`))+
+geom_point()+
+  geom_line(linetype='dashed')+
+ylab("Persistence to Spring")+
+xlab("Cohort Term")+
+theme_bw()
+
+```
+
+```{r}
+snap_master %>% 
+  filter(`REPORT ETHNICITY` %in% c("White", "Black or African-American", "Hispanic" )) %>% 
+  aggregate(ret_fall ~ `REPORT ETHNICITY`+`COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_fall,color= `REPORT ETHNICITY`, group= `REPORT ETHNICITY`))+
+  geom_point ()+
+  geom_line()+
+  ylab("Retention to Fall")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+snap_master %>% 
+  filter(`REPORT ETHNICITY` %in% c("White", "Black or African-American", "Hispanic" )) %>% 
+  aggregate(ret_spring ~ `REPORT ETHNICITY`+`COHORT TERM`,data = .,mean) %>%
+  ggplot(aes(x=`COHORT TERM`,y=ret_spring,color= `REPORT ETHNICITY`, group= `REPORT ETHNICITY`))+
+  geom_point ()+
+  geom_line(linetype='dashed')+
+  ylab("Persistence to Spring")+
+  xlab("Cohort Term")+
+  theme_bw()
+
+
+```
+
+
+
+```{r}
+snap_master %>% 
+  ggplot(aes(x=`HS GPA`,color= ret_fall, group= ret_fall))+
+  geom_histogram ()+
+  ylab("Retention to Fall")+
+  xlab("Cohort Term")+
+  theme_bw()
+```
+
+
+
+```{r}
+snap_master %>%
+  ggplot(aes(GPA.y, fill = ret_fall))+
+  geom_histogram(aes(), alpha = 0.5, position = "identity") +
+  labs(title = "Xavier Students GPA",
+       x = "GPA",
+       y = "Count")+
+  scale_fill_manual(values = c("black", "pink"))+
+  scale_color_manual(values = c("black","pink"))
+
+snap_master %>%
+  ggplot(aes(`HS GPA`, fill = ret_fall))+
+  geom_histogram(aes(), alpha = 0.5, position = "identity") +
+  labs(title = "Xavier Students High School GPA",
+       x = "GPA",
+       y = "Count")+
+  scale_fill_manual(values = c("black","pink"))+
+  scale_color_manual(values = c("black","pink"))
+```
+
+
+```{r}
+snap_master <- snap_master %>%
+  mutate(recoded_zip_code = substr(`HOME ZIP`, 1, 5))
+snap_master <- snap_master %>%
+  mutate(Distance = zip_distance(45207, `recoded_zip_code`)$distance)
+
+snap_master %>% 
+  ggplot(aes(log(Distance), GPA.y, color = ret_fall))+
+  geom_point()+
+  geom_smooth()+
+  labs(title = "Distance from Campus with GPA",
+       x = "Distance from Campus (log)",
+       y = "Fall GPA")
+
+
+
+
+snap_master %>% 
+  ggplot(aes(log(Distance), `INST AID AMT`, color = ret_fall))+
+  geom_point()+
+  geom_smooth()+
+  labs(title = "Distance from Campus with Aid",
+       x = "Distance from Campus (log)",
+       y = "Amount of Aid Recieved")
+```
