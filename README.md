@@ -1,1 +1,3 @@
 # Data-Science-Experience
+
+Hello, my name is Daniel Welch, and I am a sophomore in the Honors Data Science Program at Xavier University. In this project, I have some of the work I have done in R over the past year. The first is work I did on the Anna Albi Cincinnati City Council Campaign. While working on this campaign I used R to interpret election data by computing election maps, voter turnout predictions, and magic numbers. The other project here is my summer Project where I worked for the Xavier University Office of Institutional Research. I collaborated with a group of six other data science students to analyze retention data for the University. Used R to build a profile of students who are leaving the University.
